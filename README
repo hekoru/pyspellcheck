@@ -1,0 +1,20 @@
+Hi there!
+
+This is my propposed solution to the programming test 'spellcheck'. I think there's a lot more I could do to improve it further, but I guess the algorithm works well enough.
+I decided on python not for anything in particular, but because it's what I'm learning now. 
+I'm not sure about the time complexity, but it's faster than O(m) (being m the number of words in the dictionary) for sure.
+
+Not sure if it will work on python2.5, sorry about that.
+
+I hope you find it interesting!
+
+==== USAGE ====
+
+python spellchecker.py -> This will read words from the input and try to correct it. If it's unable to correct a word it will print NO_SUGGESTIONS and exit with return code -1
+python misspeller.py -> This will read words from the input and misspell them
+
+cat /usr/share/dict/words | python misspeller.py | python spellchecker.py -> words from the file will be misspelled and then corrected. Awesome!
+
+
+
+
