@@ -44,11 +44,13 @@ class SpellChecker(object):
         cprefixes = []
 
         #Generate combinations and check the build prefixes to see if they exist in the trie tree. This will allow us
-        #to get rid of a lot of invalid roots early on
+        #to get rid of a lot of invalid roots early on. Everytime we check a prefix we get the subtree of the possible
+        #combinations for that prefix with other sufixes.
+
         for prefixes in duplicates:
             combinations = []
             for prefix in prefixes:
-                shuffledList = self._shuffleBowels(prefix)
+                shuffledList = self._shuffleVowels(prefix)
                 if len(cprefixes) > 0:
                     combinations += [ (pref+suftuple[0], suftuple[1]) for pref, tree in cprefixes for suftuple in self._check_suffix(tree,shuffledList) if suftuple]
                 else:
@@ -102,7 +104,7 @@ class SpellChecker(object):
 
         return sflist
 
-    def _shuffleBowels(self, word):
+    def _shuffleVowels(self, word):
         """
         Will generate combinations of the same word with the vowels changed, and then generate possible combinations
         if vowels are repeated.
