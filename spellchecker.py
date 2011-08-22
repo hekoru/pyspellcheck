@@ -17,7 +17,7 @@ class SpellChecker(object):
     Spell checker class. On init it will read /usr/share/dict/words. The method correct will offer a correction.
     A good improvement would be to teach the tree which are the most common words, and choose based on ocurrence instead
     of picking the first valid candidate, but that's out of the scope of the exercise. Other possible optimization is 
-    multithreaded generation of combinations and discard of preffixes.
+    multithreaded generation of combinations and discard of prefixes.
     """
     trie = TrieTree()
 
@@ -41,23 +41,23 @@ class SpellChecker(object):
 
         
 
-        cpreffixes = []
+        cprefixes = []
 
-        #Generate combinations and check the build preffixes to see if they exist in the trie tree. This will allow us
+        #Generate combinations and check the build prefixes to see if they exist in the trie tree. This will allow us
         #to get rid of a lot of invalid roots early on
-        for preffixes in duplicates:
+        for prefixes in duplicates:
             combinations = []
-            for preffix in preffixes:
-                shuffledList = self._shuffleBowels(preffix)
-                if len(cpreffixes) > 0:
-                    combinations += [ (pref+suftuple[0], suftuple[1]) for pref, tree in cpreffixes for suftuple in self._check_suffix(tree,shuffledList) if suftuple]
+            for prefix in prefixes:
+                shuffledList = self._shuffleBowels(prefix)
+                if len(cprefixes) > 0:
+                    combinations += [ (pref+suftuple[0], suftuple[1]) for pref, tree in cprefixes for suftuple in self._check_suffix(tree,shuffledList) if suftuple]
                 else:
                     combinations += [shuffledPrefix for shuffledPrefix in self._check_suffix(self.trie,shuffledList) if shuffledPrefix]
             #Use only one copy of each
-            cpreffixes = set(combinations)
+            cprefixes = set(combinations)
             
 
-        for dword,tree in cpreffixes:
+        for dword,tree in cprefixes:
             if self.trie.containsWord(dword):
                 return dword
 
@@ -69,7 +69,7 @@ class SpellChecker(object):
 
     def _split_duplicates(self, word):
         """
-        Will generate a series of preffixes on duplicated consonant. For example adddress would be split in ((ad,add)
+        Will generate a series of prefixes on duplicated consonant. For example adddress would be split in ((ad,add)
         ,(r,rr),(es,ess))
         """
         sflist = []
