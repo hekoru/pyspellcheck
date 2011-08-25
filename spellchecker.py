@@ -77,6 +77,8 @@ class SpellChecker(object):
         sflist = []
         index = 0
 
+        wlen = len(word)
+
         for name, group in groupby(word):
             size = len(list(group))
             if size > 1:
@@ -88,7 +90,7 @@ class SpellChecker(object):
                     sflist.append((word[:index+1], word[:index + 2]))
 
 
-                if index + size != len(word):
+                if index + size != wlen:
                     sflist += self._split_duplicates(word[index+size:])
 
                 break
