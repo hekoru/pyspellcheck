@@ -98,7 +98,7 @@ class SpellChecker(object):
 
             index += size
 
-        if len(sflist) == 0:
+        if not sflist:
             sflist.append((word,))
 
         return sflist
