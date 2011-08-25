@@ -80,18 +80,15 @@ class SpellChecker(object):
         for name, group in groupby(word):
             size = len(list(group))
             if size > 1:
-                if index + size == len(word):
-                    #There are no words with more than three repeated characters
-                    if size > 2:
-                        sflist.append((word[:index+1], word[:index + 2], word[:index+3]))
-                    else:
-                        sflist.append((word[:index+1], word[:index + 2]))
-                else:
-                    if size > 2:
-                        sflist.append((word[:index+1], word[:index+2], word[:index+3]))
-                    else:
-                        sflist.append((word[:index+1], word[:index+2]))
 
+                #There are no words with more than three repeated characters
+                if size > 2:
+                    sflist.append((word[:index+1], word[:index + 2], word[:index+3]))
+                else:
+                    sflist.append((word[:index+1], word[:index + 2]))
+
+
+                if index + size != len(word):
                     sflist += self._split_duplicates(word[index+size:])
 
                 break
