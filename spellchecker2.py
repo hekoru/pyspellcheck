@@ -28,14 +28,14 @@ class SpellChecker(object):
         for word in file:
             self.trie.addWord(str.strip(str.lower(word)))
 
-        #self.trie.addWord('concurrency')
+            #self.trie.addWord('concurrency')
 
     def _shuffle_vowels(self, word):
         sflist = []
 
-        for index,character in enumerate(word):
+        for index, character in enumerate(word):
             if character in VOWELS:
-                sflist.append([ word[:index] + vowel for vowel in VOWELS])
+                sflist.append([word[:index] + vowel for vowel in VOWELS])
 
                 sflist += self._shuffle_vowels(word[index + 1:])
                 break
@@ -45,7 +45,57 @@ class SpellChecker(object):
 
         return sflist
 
-    def _split_duplicates(self, word, findex):
+    def _split_duplicates(self, word, findex, tree):
+        """
+        Will generate a series of prefixes on duplicated consonant. For example adddress would be split in ((ad,add)
+        ,(r,rr),(es,ess))
+        """
+        sflist = []
+        index = findex
+
+        word2 = word[findex:]
+        wlen = len(word)
+
+        for name, group in groupby(word2):
+            size = len(list(group))
+            size2 = size
+            if size > 1:
+                #There are no words with more than three repeated characters
+
+                #if size > 2:
+                #if index == findex and name in VOWELS:
+                #    size -= 1
+
+                #sflist.append(word[findex:index + 1])
+                for x in range(1, min(3,size + 1)):
+                    pref = word[findex:index + x]
+                    preftocheck = pref[1:]
+                    #if index == findex and x > 1:
+                    #    preftocheck = pref[1:]
+
+                    if tree.containsPrefix(preftocheck):
+                        sflist.append(pref)
+
+
+                #else:
+                #    sflist.append(word[findex:index + 1])
+                #    sflist.append(word[findex:index + 2])
+
+                if index + size2 != wlen and sflist:
+                    sflist = [w1 + w2 for w1 in sflist for w2 in self._split_duplicates_no_tree(word[index + size:], 0)]
+
+                break
+
+            index += size
+
+        if not sflist:
+            sflist.append(word)
+        elif findex:
+            sflist = [word[:findex] + w1 for w1 in sflist]
+
+        return sflist
+
+    def _split_duplicates_no_tree(self, word, findex):
         """
         Will generate a series of prefixes on duplicated consonant. For example adddress would be split in ((ad,add)
         ,(r,rr),(es,ess))
@@ -70,7 +120,7 @@ class SpellChecker(object):
 
 
                 if index + size != wlen:
-                    sflist = [w1 + w2 for w1 in sflist for w2 in self._split_duplicates(word[index + size:],0)]
+                    sflist = [w1 + w2 for w1 in sflist for w2 in self._split_duplicates_no_tree(word[index + size:],0)]
 
                 break
 
@@ -99,35 +149,21 @@ class SpellChecker(object):
             combs = []
 
             for unit in unitlist:
-
-
                 if not combined_units:
-
                     if len(unit) > 1:
-                        duplicates =  self._split_duplicates(unit,0)
+                        duplicates = self._split_duplicates(unit, 0, self.trie)
                     else:
                         duplicates = (unit,)
 
-                    combs += [ tuple for tuple in self._check_suffix(self.trie, duplicates) if tuple]
+                    combs += [tuple for tuple in self._check_suffix(self.trie, duplicates) if tuple]
                 else:
-                    wtc = []
-                    for word, tree in combined_units:
-                        w2 = word + unit
-                        dups = self._split_duplicates(w2, len(word) - 1)
-                        for dup in dups:
-                            if dup == word:
-                                combs.append((word,tree))
-                            else:
-                                tuple = tree.containsPrefix(dup[len(word):])
-                                if tuple:
-                                    combs.append((dup, tuple[1]))
+                    combs += self.combine_and_remove_duplicates(combined_units, unit)
 
                     #combs += [(w[0] + tuple[0], tuple[1]) for w in combined_units for tuple in self.generate_combinations(duplicates, w[1]) if tuple]
 
-
             combined_units = combs
 
-        for w,t in combined_units:
+        for w, t in combined_units:
             if self.trie.containsWord(w):
                 return w
 
@@ -137,20 +173,28 @@ class SpellChecker(object):
         for word in words:
             yield tree.containsPrefix(word)
 
+    def combine_and_remove_duplicates(self, combined_units, unit):
+        combs = []
 
-
-
+        for word, dups, tree in [(word, self._split_duplicates(word + unit, len(word) - 1, tree), tree) for word, tree in
+                                                                                                  combined_units]:
+            for dup in dups:
+                if len(dup) == len(word):
+                    combs.append((word, tree))
+                else:
+                    tuple = tree.containsPrefix(dup[len(word):])
+                    if tuple:
+                        combs.append((dup, tuple[1]))
+        return combs
 
 
 if __name__ == '__main__':
     sc = SpellChecker()
 
-    #for word in ['counccurrreincy']:
+    #for word in ['eabbaanddooneeee']:
     for word in sys.stdin:
-
-
         word = str.strip(word)
-        print "Correcting %s"%word
+        #print "Correcting %s"%word
         correction = sc.correct(word)
         print correction
         if correction is NO_SUGGESTION:
